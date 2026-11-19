@@ -1,0 +1,2642 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2-зертханалық жұмыс: Виртуалды зертхана және Мұғалім панелі</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #2563eb;
+      --primary-bg: #eff6ff;
+      --emerald: #15803d;
+      --emerald-bg: #f0fdf4;
+      --rose: #be123c;
+      --rose-bg: #fff1f2;
+      --amber: #b45309;
+      --amber-bg: #fffbeb;
+      --orange: #ea580c;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --white: #ffffff;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--slate-100);
+      color: var(--slate-800);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 58%, #0284c7 100%);
+      color: var(--white);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: clamp(1.15rem, 2.3vw, 1.55rem);
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    /* Role Navigation Tabs */
+    .role-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.45);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .role-btn {
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #e2e8f0;
+      background: transparent;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .role-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--white);
+    }
+
+    .role-btn.active {
+      background: var(--white);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Sync indicator bar */
+    .status-strip {
+      background: #0f172a;
+      color: #cbd5e1;
+      font-size: 12px;
+      padding: 6px 20px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .status-strip-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sync-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 6px;
+    }
+
+    .sync-dot.local {
+      background: #f59e0b;
+    }
+
+    /* Theory Callout */
+    .theory-section {
+      background: var(--primary-bg);
+      border-bottom: 1px solid #bfdbfe;
+      padding: 14px 20px;
+    }
+
+    .theory-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    @media (max-width: 850px) {
+      .theory-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .theory-text p {
+      font-size: 13.5px;
+      color: var(--slate-800);
+      margin-bottom: 5px;
+    }
+
+    .theory-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mini-card {
+      background: var(--white);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid #bfdbfe;
+      text-align: center;
+    }
+
+    .mini-card.act {
+      border-color: #86efac;
+      background: var(--emerald-bg);
+    }
+
+    .mini-card.inh {
+      border-color: #fecdd3;
+      background: var(--rose-bg);
+    }
+
+    .mini-card strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .mini-card span {
+      font-size: 11.5px;
+      color: var(--slate-600);
+    }
+
+    /* Main Workspace */
+    main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--slate-200);
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--slate-900);
+    }
+
+    /* Student Identity Form */
+    .student-info-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 14px;
+      align-items: end;
+    }
+
+    @media (max-width: 760px) {
+      .student-info-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--slate-700);
+      margin-bottom: 5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--slate-300);
+      font-size: 14px;
+      color: var(--slate-900);
+      background: var(--white);
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-light);
+    }
+
+    /* Workspace Grid */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      align-items: start;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 980px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Step Boxes */
+    .step-box {
+      border: 1.5px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+      transition: all 0.25s;
+    }
+
+    .step-box.active {
+      border-color: var(--primary-light);
+      background: var(--primary-bg);
+    }
+
+    .step-box.done {
+      border-color: #86efac;
+      background: var(--emerald-bg);
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--primary);
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .step-box.done .step-label {
+      color: var(--emerald);
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--slate-700);
+      margin-bottom: 10px;
+    }
+
+    .reagent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s, opacity 0.2s;
+      text-align: center;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary-light);
+      color: var(--white);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary);
+    }
+
+    .btn-success {
+      background: #16a34a;
+      color: var(--white);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #15803d;
+    }
+
+    .btn-orange {
+      background: var(--orange);
+      color: var(--white);
+    }
+
+    .btn-orange:hover:not(:disabled) {
+      background: #c2410c;
+    }
+
+    .btn-water { background: #0284c7; color: var(--white); }
+    .btn-nacl { background: #16a34a; color: var(--white); }
+    .btn-cuso4 { background: #2563eb; color: var(--white); }
+    .btn-enzyme { background: #d97706; color: var(--white); }
+    .btn-starch { background: #7c3aed; color: var(--white); }
+    .btn-iodine { background: #92400e; color: var(--white); }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .btn-reset {
+      background: var(--slate-200);
+      color: var(--slate-800);
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+
+    .btn-reset:hover {
+      background: var(--slate-300);
+    }
+
+    /* Digital Timer */
+    .timer-panel {
+      background: var(--slate-900);
+      color: var(--white);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .timer-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .timer-sub {
+      font-size: 11px;
+      color: var(--slate-400);
+    }
+
+    /* Visual Lab Bench */
+    .bench-stage {
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 82%, #cbd5e1 82%, #94a3b8 100%);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 16px 10px 8px 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bench-stage svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .status-pill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid #fde68a;
+    }
+
+    .status-pill.ready {
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border-color: #bbf7d0;
+    }
+
+    .status-pill.danger {
+      background: var(--rose-bg);
+      color: var(--rose);
+      border-color: #fecdd3;
+    }
+
+    .live-log {
+      margin-top: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--slate-700);
+    }
+
+    @keyframes dropFall {
+      0% { transform: translateY(0); opacity: 1; }
+      85% { transform: translateY(48px); opacity: 1; }
+      100% { transform: translateY(56px); opacity: 0; }
+    }
+
+    .dropping {
+      animation: dropFall 0.55s ease-in forwards;
+    }
+
+    /* Bottom Grid: Observation Table & Quiz */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 980px) {
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--slate-300);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      background: var(--primary);
+      color: var(--white);
+      padding: 10px 8px;
+      text-align: center;
+      font-weight: 700;
+      border: 1px solid #1d4ed8;
+    }
+
+    td {
+      padding: 10px 8px;
+      border: 1px solid var(--slate-200);
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    td.left-align {
+      text-align: left;
+    }
+
+    select.lab-select, input.lab-time-input {
+      width: 100%;
+      padding: 7px 8px;
+      border-radius: 6px;
+      border: 1.5px solid var(--slate-300);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate-800);
+      background: var(--white);
+    }
+
+    input.lab-time-input {
+      text-align: center;
+      max-width: 85px;
+    }
+
+    select.lab-select.correct, input.lab-time-input.correct {
+      border-color: #16a34a;
+      background-color: var(--emerald-bg);
+      color: #14532d;
+    }
+
+    select.lab-select.wrong, input.lab-time-input.wrong {
+      border-color: #e11d48;
+      background-color: var(--rose-bg);
+      color: #881337;
+    }
+
+    .feedback-msg {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      display: none;
+    }
+
+    .feedback-msg.show {
+      display: block;
+    }
+
+    .feedback-msg.ok {
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border: 1px solid #bbf7d0;
+    }
+
+    .feedback-msg.err {
+      background: var(--rose-bg);
+      color: var(--rose);
+      border: 1px solid #fecdd3;
+    }
+
+    /* Quiz Styling */
+    .quiz-item {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .quiz-item:last-of-type {
+      border-bottom: none;
+    }
+
+    .quiz-q {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 8px;
+    }
+
+    .quiz-opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--slate-200);
+      margin-bottom: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .quiz-opt:hover {
+      background: #f8fafc;
+    }
+
+    .quiz-opt input {
+      margin-top: 3px;
+      accent-color: var(--primary);
+    }
+
+    .quiz-opt.correct-ans {
+      background: var(--emerald-bg);
+      border-color: #22c55e;
+      color: #14532d;
+      font-weight: 600;
+    }
+
+    .quiz-opt.wrong-ans {
+      background: var(--rose-bg);
+      border-color: #f43f5e;
+      color: #881337;
+    }
+
+    .conclusion-box {
+      margin-top: 14px;
+      background: #f8fafc;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 12px;
+    }
+
+    .conclusion-box textarea {
+      width: 100%;
+      margin-top: 6px;
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--slate-300);
+      font-family: inherit;
+      font-size: 13px;
+      resize: vertical;
+    }
+
+    /* Submit Banner */
+    .submit-box {
+      background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+      border: 2px solid #86efac;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Teacher Dashboard KPI & Charts */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kpi-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--slate-600);
+      text-transform: uppercase;
+    }
+
+    .kpi-num {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--slate-900);
+      margin: 4px 0;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--slate-600);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bar-row {
+      margin-bottom: 12px;
+    }
+
+    .bar-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--slate-700);
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 12px;
+      background: var(--slate-100);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    /* Modal / Drawer for Teacher Grading & Student Result */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 90;
+      overflow-y: auto;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      max-width: 820px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .review-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    @media (max-width: 720px) {
+      .review-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .review-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--slate-200);
+      font-size: 13px;
+    }
+
+    .review-item.ok {
+      background: var(--emerald-bg);
+      border-color: #86efac;
+    }
+
+    .review-item.bad {
+      background: var(--rose-bg);
+      border-color: #fecdd3;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--slate-900);
+      color: var(--white);
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 120;
+      max-width: 380px;
+    }
+
+    .toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-top">
+      <div>
+        <div class="badge">🔬 11-сынып Биология • 2-зертханалық жұмыс</div>
+        <h1>Белсендіргіштер мен ингибиторлардың ферменттік реакция жылдамдығына әсерін зерттеу</h1>
+      </div>
+
+      <!-- Role Navigation -->
+      <nav class="role-switcher" aria-label="Бөлімдерді ауыстыру">
+        <button id="nav-student" class="role-btn active" onclick="switchView('student')">
+          🧪 Оқушы режимі
+        </button>
+        <button id="nav-my-result" class="role-btn" onclick="switchView('my-result')">
+          📩 Менің нәтижем
+        </button>
+        <button id="nav-teacher" class="role-btn" onclick="openTeacherLogin()">
+          👩‍🏫 Мұғалім панелі
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Database Sync Status Bar -->
+  <div class="status-strip">
+    <div class="container status-strip-inner">
+      <div>
+        <span id="sync-dot" class="sync-dot local"></span>
+        <span id="sync-status-text">Деректер қоры: Жергілікті сақтау режимі (қосылуда...)</span>
+      </div>
+      <div>
+        <span>Сынып жұмыстары: <strong id="total-submissions-badge">0</strong> тапсырма</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theory Callout (Visible in Student Mode) -->
+  <section id="theory-panel" class="theory-section">
+    <div class="container theory-grid">
+      <div class="theory-text">
+        <p><strong>Жұмыс мақсаты:</strong> Белсендіргіш пен ингибиторлардың сілекей амилазасы ферментінің белсенділігіне әсерін бағалау.</p>
+        <p><strong>Теориялық негіз:</strong> Амилаза крахмалдағы &alpha;(1&rarr;4)-гликозидті байланыстарды ыдыратып, соңғы өнімі — <strong>мальтоза</strong> дисахаридін түзеді. Белсендіргіштер ферменттің катализдік әсерін арттырса, ингибиторлар тежейді.</p>
+      </div>
+      <div class="theory-cards">
+        <div class="mini-card act">
+          <strong style="color: #15803d;">⚡ Белсендіргіш (NaCl)</strong>
+          <span>Cl<sup>&minus;</sup> иондары амилаза белсенділігін арттырады</span>
+        </div>
+        <div class="mini-card inh">
+          <strong style="color: #be123c;">🛑 Ингибитор (CuSO<sub>4</sub>)</strong>
+          <span>Cu<sup>2+</sup> иондары амилаза әсерін тежейді</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <main class="container">
+
+    <!-- =================================================================== -->
+    <!-- VIEW 1: STUDENT MODE (VIRTUAL LAB + WORKSHEET + SUBMIT)             -->
+    <!-- =================================================================== -->
+    <div id="view-student" class="view-section active">
+
+      <!-- Student Registration Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">👤 1. Оқушы туралы мәлімет</span>
+          <span class="status-pill ready">Зертханалық жұмыс парағы</span>
+        </div>
+        <div class="student-info-bar">
+          <div class="form-group">
+            <label for="stu-name">Оқушының аты-жөні (Толық жазыңыз):</label>
+            <input type="text" id="stu-name" class="form-control" placeholder="Мысалы: Серікболсын Айдос">
+          </div>
+          <div class="form-group">
+            <label for="stu-class">Сыныбы:</label>
+            <select id="stu-class" class="form-control">
+              <option value="11 «А»">11 «А»</option>
+              <option value="11 «Ә»">11 «Ә»</option>
+              <option value="11 «Б»">11 «Б»</option>
+              <option value="11 «В»">11 «В»</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Тәжірибе барысының орындалуы:</label>
+            <div style="background: var(--slate-100); padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid var(--slate-300); font-weight: 800; color: var(--primary); text-align: center;">
+              <span id="exp-progress-label">0% орындалды</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Virtual Lab Bench & Controls -->
+      <div class="workspace-grid">
+
+        <!-- Left Column: Step-by-Step Controls -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <span class="card-title">🧪 2. Тәжірибе барысы</span>
+            <button class="btn btn-reset" onclick="resetLab()">🔄 Қайта бастау</button>
+          </div>
+
+          <!-- Step 1: Base Solutions -->
+          <div id="step-1" class="step-box active">
+            <div class="step-label">
+              <span>1-кезең: Ерітінділерді құю</span>
+              <span id="badge-s1">Орындалуда</span>
+            </div>
+            <p class="step-desc">Үш сынауыққа дистилденген су және әсер етуші заттарды (NaCl, CuSO<sub>4</sub>) тамызыңыз:</p>
+            <div class="reagent-grid">
+              <button id="btn-water" class="btn btn-water" onclick="addWater()">
+                💧 Дист. су құю<br><small>(2,0 / 1,6 / 1,6 мл)</small>
+              </button>
+              <button id="btn-nacl" class="btn btn-nacl" onclick="addNaCl()" disabled>
+                🧂 1% NaCl (0,4 мл)<br><small>№2 сынауыққа</small>
+              </button>
+              <button id="btn-cuso4" class="btn btn-cuso4" onclick="addCuSO4()" disabled style="grid-column: span 2;">
+                🧪 1% CuSO<sub>4</sub> (0,4 мл) &rarr; №3 сынауыққа
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Enzyme & Substrate -->
+          <div id="step-2" class="step-box">
+            <div class="step-label">
+              <span>2-кезең: Фермент және Субстрат</span>
+              <span id="badge-s2">Күтуде</span>
+            </div>
+            <p class="step-desc">Барлық 3 сынауыққа 0,5 мл сұйылтылған сілекей (амилаза) және 1,0 мл 1% крахмал қосыңыз:</p>
+            <div class="reagent-grid">
+              <button id="btn-amylase" class="btn btn-enzyme" onclick="addAmylase()" disabled>
+                🧬 Амилаза (0,5 мл)<br><small>Барлық сынауыққа</small>
+              </button>
+              <button id="btn-starch" class="btn btn-starch" onclick="addStarch()" disabled>
+                🥣 1% Крахмал (1,0 мл)<br><small>Барлық сынауыққа</small>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Incubation Timer (5 min) -->
+          <div id="step-3" class="step-box">
+            <div class="step-label">
+              <span>3-кезең: Инкубация (5 минут)</span>
+              <span id="badge-s3">Күтуде</span>
+            </div>
+            <p class="step-desc">Сынауықтарды араластырып, бөлме температурасында 5 минут ұстаңыз (1 сек = 1 мин):</p>
+            <button id="btn-timer" class="btn btn-primary btn-full" onclick="startIncubation()" disabled>
+              ⏱️ Араластыру және таймерді қосу (5 мин)
+            </button>
+            <div class="timer-panel">
+              <div>
+                <div class="timer-sub">ИНКУБАЦИЯ УАҚЫТЫ</div>
+                <div id="timer-display" class="timer-value">00:00</div>
+              </div>
+              <div style="text-align: right;">
+                <div id="timer-status" class="timer-sub">Таймер өшірулі</div>
+                <div style="font-size: 12px; color: #93c5fd; font-weight: 600;">Бөлме t° (~22°C)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Iodine Qualitative Test -->
+          <div id="step-4" class="step-box" style="margin-bottom: 0;">
+            <div class="step-label">
+              <span>4-кезең: Йодпен түсті сынау</span>
+              <span id="badge-s4">Күтуде</span>
+            </div>
+            <p class="step-desc">Әр сынауықтан 2–3 тамшы сынама алып, Люголь (йод) ерітіндісі бар бақылау сынауықтарына (1 мл) тамызыңыз:</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+              <button id="btn-iod-1" class="btn btn-iodine" onclick="testIodine(1)" disabled>
+                💧 №1 сынама
+              </button>
+              <button id="btn-iod-2" class="btn btn-iodine" onclick="testIodine(2)" disabled>
+                💧 №2 сынама
+              </button>
+              <button id="btn-iod-3" class="btn btn-iodine" onclick="testIodine(3)" disabled>
+                💧 №3 сынама
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Visual Lab Bench -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <span class="card-title">🔬 Визуалды зертхана үстелі</span>
+            <span id="bench-status" class="status-pill">1-кезең: Дистилденген су құйыңыз</span>
+          </div>
+
+          <div class="bench-stage">
+            <svg viewBox="0 0 760 390" role="img" aria-label="Зертханалық сынауықтар визуализациясы">
+              <text x="215" y="22" font-size="13" font-weight="800" fill="#1e293b" text-anchor="middle">НЕГІЗГІ ТӘЖІРИБЕ СЫНАУЫҚТАРЫ (Амилаза + Крахмал)</text>
+              <line x1="435" y1="15" x2="435" y2="355" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 4" />
+              <text x="598" y="22" font-size="13" font-weight="800" fill="#92400e" text-anchor="middle">ЙОДПЕН ТҮСТІ СЫНАУ (1 мл Люголь)</text>
+
+              <!-- Pipette Drop Visuals -->
+              <circle id="drop-main-1" cx="85" cy="52" r="5" fill="#38bdf8" opacity="0" />
+              <circle id="drop-main-2" cx="215" cy="52" r="5" fill="#38bdf8" opacity="0" />
+              <circle id="drop-main-3" cx="345" cy="52" r="5" fill="#38bdf8" opacity="0" />
+
+              <!-- MAIN TUBE 1 -->
+              <g transform="translate(55, 42)">
+                <text x="30" y="0" font-size="12" font-weight="800" fill="#0f172a" text-anchor="middle">№1 (Бақылау)</text>
+                <text x="30" y="15" font-size="10.5" font-weight="600" fill="#475569" text-anchor="middle">Дист. су (2,0 мл)</text>
+                <rect x="10" y="25" width="40" height="225" rx="20" fill="#ffffff" fill-opacity="0.65" stroke="#64748b" stroke-width="2.5" />
+                <rect id="liq-main-1" x="12" y="248" width="36" height="0" rx="16" fill="#bae6fd" style="transition: all 0.5s ease;" />
+                <line x1="10" y1="100" x2="20" y2="100" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="10" y1="150" x2="20" y2="150" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="10" y1="200" x2="20" y2="200" stroke="#94a3b8" stroke-width="1.5" />
+                <rect x="0" y="260" width="60" height="22" rx="6" fill="#e2e8f0" />
+                <text id="vol-main-1" x="30" y="275" font-size="11" font-weight="700" fill="#1e293b" text-anchor="middle">0.0 мл</text>
+              </g>
+
+              <!-- MAIN TUBE 2 -->
+              <g transform="translate(185, 42)">
+                <text x="30" y="0" font-size="12" font-weight="800" fill="#15803d" text-anchor="middle">№2 (Белсендіргіш)</text>
+                <text x="30" y="15" font-size="10.5" font-weight="600" fill="#166534" text-anchor="middle">+ 0,4 мл NaCl</text>
+                <rect x="10" y="25" width="40" height="225" rx="20" fill="#ffffff" fill-opacity="0.65" stroke="#15803d" stroke-width="2.5" />
+                <rect id="liq-main-2" x="12" y="248" width="36" height="0" rx="16" fill="#bbf7d0" style="transition: all 0.5s ease;" />
+                <line x1="10" y1="100" x2="20" y2="100" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="10" y1="150" x2="20" y2="150" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="10" y1="200" x2="20" y2="200" stroke="#94a3b8" stroke-width="1.5" />
+                <rect x="0" y="260" width="60" height="22" rx="6" fill="#dcfce7" />
+                <text id="vol-main-2" x="30" y="275" font-size="11" font-weight="700" fill="#14532d" text-anchor="middle">0.0 мл</text>
+              </g>
+
+              <!-- MAIN TUBE 3 -->
+              <g transform="translate(315, 42)">
+                <text x="30" y="0" font-size="12" font-weight="800" fill="#be123c" text-anchor="middle">№3 (Ингибитор)</text>
+                <text x="30" y="15" font-size="10.5" font-weight="600" fill="#9f1239" text-anchor="middle">+ 0,4 мл CuSO₄</text>
+                <rect x="10" y="25" width="40" height="225" rx="20" fill="#ffffff" fill-opacity="0.65" stroke="#be123c" stroke-width="2.5" />
+                <rect id="liq-main-3" x="12" y="248" width="36" height="0" rx="16" fill="#93c5fd" style="transition: all 0.5s ease;" />
+                <line x1="10" y1="100" x2="20" y2="100" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="10" y1="150" x2="20" y2="150" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="10" y1="200" x2="20" y2="200" stroke="#94a3b8" stroke-width="1.5" />
+                <rect x="0" y="260" width="60" height="22" rx="6" fill="#ffe4e6" />
+                <text id="vol-main-3" x="30" y="275" font-size="11" font-weight="700" fill="#881337" text-anchor="middle">0.0 мл</text>
+              </g>
+
+              <rect x="35" y="232" width="360" height="12" rx="4" fill="#64748b" />
+
+              <!-- IODINE TEST TUBES -->
+              <circle id="drop-iod-1" cx="495" cy="95" r="5" fill="#f8fafc" opacity="0" />
+              <circle id="drop-iod-2" cx="598" cy="95" r="5" fill="#f8fafc" opacity="0" />
+              <circle id="drop-iod-3" cx="701" cy="95" r="5" fill="#f8fafc" opacity="0" />
+
+              <g transform="translate(470, 82)">
+                <text x="25" y="0" font-size="11.5" font-weight="800" fill="#334155" text-anchor="middle">Сынама №1</text>
+                <text x="25" y="13" font-size="10" fill="#64748b" text-anchor="middle">(Су)</text>
+                <rect x="8" y="22" width="34" height="175" rx="17" fill="#ffffff" fill-opacity="0.7" stroke="#64748b" stroke-width="2" />
+                <rect id="liq-iod-1" x="10" y="115" width="30" height="80" rx="14" fill="#f59e0b" style="transition: fill 0.8s ease;" />
+                <text id="res-iod-1" x="25" y="218" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">Йод (1 мл)</text>
+              </g>
+
+              <g transform="translate(573, 82)">
+                <text x="25" y="0" font-size="11.5" font-weight="800" fill="#15803d" text-anchor="middle">Сынама №2</text>
+                <text x="25" y="13" font-size="10" fill="#166534" text-anchor="middle">(NaCl)</text>
+                <rect x="8" y="22" width="34" height="175" rx="17" fill="#ffffff" fill-opacity="0.7" stroke="#15803d" stroke-width="2" />
+                <rect id="liq-iod-2" x="10" y="115" width="30" height="80" rx="14" fill="#f59e0b" style="transition: fill 0.8s ease;" />
+                <text id="res-iod-2" x="25" y="218" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">Йод (1 мл)</text>
+              </g>
+
+              <g transform="translate(676, 82)">
+                <text x="25" y="0" font-size="11.5" font-weight="800" fill="#be123c" text-anchor="middle">Сынама №3</text>
+                <text x="25" y="13" font-size="10" fill="#9f1239" text-anchor="middle">(CuSO₄)</text>
+                <rect x="8" y="22" width="34" height="175" rx="17" fill="#ffffff" fill-opacity="0.7" stroke="#be123c" stroke-width="2" />
+                <rect id="liq-iod-3" x="10" y="115" width="30" height="80" rx="14" fill="#f59e0b" style="transition: fill 0.8s ease;" />
+                <text id="res-iod-3" x="25" y="218" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">Йод (1 мл)</text>
+              </g>
+
+              <rect x="458" y="255" width="280" height="10" rx="4" fill="#78350f" />
+            </svg>
+          </div>
+
+          <div id="live-explanation" class="live-log">
+            <strong>Нұсқаулық:</strong> Алдымен 1-кезеңдегі <em>«Дист. су құю»</em> батырмасын басып, үш сынауыққа тиісті көлемде су құйыңыз.
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Grid: Observation Table & Quiz -->
+      <div class="bottom-grid">
+
+        <!-- Section 3: Observation Table -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📊 3. Бақылау нәтижелері кестесі</span>
+            <button class="btn btn-primary" onclick="checkTable()">✔️ Кестені тексеру</button>
+          </div>
+          <p style="font-size: 13px; color: var(--slate-600); margin-bottom: 12px;">
+            Әр сынауықтағы әрекет ету уақытын (минутпен) енгізіңіз және йод қосқаннан кейінгі боялу түсін таңдаңыз:
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Фермент</th>
+                  <th>Субстрат</th>
+                  <th>Уақыты, мин</th>
+                  <th>Йод қосылғаннан кейін сұйықтықтың боялуы (қосылған зат)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Амилаза</strong></td>
+                  <td>Крахмал</td>
+                  <td>
+                    <input type="number" id="time-row-1" class="lab-time-input" placeholder="мин" min="1" max="60">
+                  </td>
+                  <td class="left-align">
+                    <div style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">№1 Дистилденген су (бақылау):</div>
+                    <select id="sel-row-1" class="lab-select">
+                      <option value="">-- Түсті таңдаңыз --</option>
+                      <option value="yellow">Сары / түссіз (крахмал толық ыдыраған)</option>
+                      <option value="violet">Ашық күлгін / қызғылт-сары (жартылай ыдыраған)</option>
+                      <option value="blue">Қою көк түс (крахмал ыдырамаған)</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Амилаза</strong></td>
+                  <td>Крахмал</td>
+                  <td>
+                    <input type="number" id="time-row-2" class="lab-time-input" placeholder="мин" min="1" max="60">
+                  </td>
+                  <td class="left-align">
+                    <div style="font-size: 12px; font-weight: 700; color: #15803d; margin-bottom: 4px;">№2 Натрий хлориді (NaCl — белсендіргіш):</div>
+                    <select id="sel-row-2" class="lab-select">
+                      <option value="">-- Түсті таңдаңыз --</option>
+                      <option value="yellow">Сары / түссіз (крахмал толық ыдыраған)</option>
+                      <option value="violet">Ашық күлгін / қызғылт-сары (жартылай ыдыраған)</option>
+                      <option value="blue">Қою көк түс (крахмал ыдырамаған)</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Амилаза</strong></td>
+                  <td>Крахмал</td>
+                  <td>
+                    <input type="number" id="time-row-3" class="lab-time-input" placeholder="мин" min="1" max="60">
+                  </td>
+                  <td class="left-align">
+                    <div style="font-size: 12px; font-weight: 700; color: #be123c; margin-bottom: 4px;">№3 Мыс сульфаты (CuSO₄ — ингибитор):</div>
+                    <select id="sel-row-3" class="lab-select">
+                      <option value="">-- Түсті таңдаңыз --</option>
+                      <option value="yellow">Сары / түссіз (крахмал толық ыдыраған)</option>
+                      <option value="violet">Ашық күлгін / қызғылт-сары (жартылай ыдыраған)</option>
+                      <option value="blue">Қою көк түс (крахмал ыдырамаған)</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="table-feedback" class="feedback-msg"></div>
+
+          <!-- Written Conclusion Box -->
+          <div class="conclusion-box">
+            <strong style="font-size: 13px; color: var(--slate-900);">✍️ Зертханалық жұмыс қорытындысы:</strong>
+            <p style="font-size: 12px; color: var(--slate-600); margin-top: 2px;">Жұмыстың мақсаты орындалды ма, нәтижелер қандай? NaCl мен CuSO₄ амилазаға қалай әсер етті?</p>
+            <textarea id="conclusion-input" rows="3" placeholder="Қорытындыңызды осында жазыңыз..."></textarea>
+          </div>
+        </div>
+
+        <!-- Section 4: Self-Check Quiz -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🎯 4. Өзін-өзі тексеру тесті</span>
+            <span id="quiz-score" class="status-pill">Ұпай: 0 / 4</span>
+          </div>
+
+          <div class="quiz-item" id="q-block-1">
+            <div class="quiz-q">1. Сілекей амилазасының белсендіргіші ретінде қандай иондар әсер етеді?</div>
+            <label class="quiz-opt"><input type="radio" name="q1" value="a"> Cu²⁺ және Hg²⁺ иондары</label>
+            <label class="quiz-opt"><input type="radio" name="q1" value="b"> Cl⁻ (NaCl), Ca²⁺, Zn²⁺ иондары</label>
+            <label class="quiz-opt"><input type="radio" name="q1" value="c"> Тек дистилденген су молекулалары</label>
+          </div>
+
+          <div class="quiz-item" id="q-block-2">
+            <div class="quiz-q">2. №3 сынауыққа мыс сульфатын (CuSO₄) қосқанда йодпен неліктен қою көк түс пайда болды?</div>
+            <label class="quiz-opt"><input type="radio" name="q2" value="a"> Cu²⁺ иондары амилазаны ингибирлеп, крахмал ыдырамай қалды</label>
+            <label class="quiz-opt"><input type="radio" name="q2" value="b"> Крахмал толық глюкозаға дейін ыдырап кетті</label>
+            <label class="quiz-opt"><input type="radio" name="q2" value="c"> Йод ерітіндісі мыс сульфатымен әрекеттесіп көгерді</label>
+          </div>
+
+          <div class="quiz-item" id="q-block-3">
+            <div class="quiz-q">3. Амилаза ферменті крахмалдағы қандай байланыстарды үзіп, мальтоза түзеді?</div>
+            <label class="quiz-opt"><input type="radio" name="q3" value="a"> Пептидтік байланыстарды</label>
+            <label class="quiz-opt"><input type="radio" name="q3" value="b"> Фосфодиэфирлік байланыстарды</label>
+            <label class="quiz-opt"><input type="radio" name="q3" value="c"> &alpha;(1&rarr;4)-гликозидті байланыстарды</label>
+          </div>
+
+          <div class="quiz-item" id="q-block-4">
+            <div class="quiz-q">4. Қай сынауықта ферменттік реакция ең жоғары жылдамдықпен жүрді?</div>
+            <label class="quiz-opt"><input type="radio" name="q4" value="a"> №1 сынауықта (дистилденген су)</label>
+            <label class="quiz-opt"><input type="radio" name="q4" value="b"> №2 сынауықта (0,4 мл 1% NaCl қосылған)</label>
+            <label class="quiz-opt"><input type="radio" name="q4" value="c"> №3 сынауықта (0,4 мл 1% CuSO₄ қосылған)</label>
+          </div>
+
+          <button class="btn btn-primary btn-full" onclick="checkQuiz()">📝 Тест жауаптарын тексеру</button>
+          <div id="quiz-feedback" class="feedback-msg"></div>
+        </div>
+      </div>
+
+      <!-- Submit to Teacher Banner -->
+      <div class="submit-box">
+        <div>
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--slate-900);">📤 Жұмысты аяқтап, мұғалімге жіберу</h3>
+          <p style="font-size: 13px; color: var(--slate-700); margin-top: 3px;">
+            Тәжірибе нәтижелері, кесте, қорытынды және тест ұпайы мұғалім панеліне тікелей жіберіледі.
+          </p>
+        </div>
+        <button id="btn-submit-work" class="btn btn-success" style="padding: 13px 24px; font-size: 15px;" onclick="submitStudentWork()">
+          🚀 Мұғалімге жіберу
+        </button>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 2: STUDENT RESULT CHECK ("МЕНІҢ НӘТИЖЕМ")                     -->
+    <!-- =================================================================== -->
+    <div id="view-my-result" class="view-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📩 Жіберілген жұмыс күйі және Мұғалімнің түзетуі</span>
+          <button class="btn btn-reset" onclick="switchView('student')">&larr; Зертханаға оралу</button>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px;">
+          <input type="text" id="search-student-name" class="form-control" style="max-width: 360px;" placeholder="Аты-жөніңізді енгізіңіз (мысалы: Серікболсын Айдос)">
+          <button class="btn btn-primary" onclick="lookupStudentResult()">🔍 Нәтижені іздеу</button>
+        </div>
+
+        <div id="student-result-container">
+          <p style="font-size: 13.5px; color: var(--slate-600);">
+            Жіберген жұмысыңыздың күйін және мұғалімнің жазған пікірін/түзетуін көру үшін жоғарыдағы өріске аты-жөніңізді жазып <strong>«Нәтижені іздеу»</strong> батырмасын басыңыз.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 3: TEACHER DASHBOARD (ANALYTICS + GRADING & CORRECTION)        -->
+    <!-- =================================================================== -->
+    <div id="view-teacher" class="view-section">
+
+      <!-- Teacher Top Action Bar -->
+      <div class="card" style="background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);">
+        <div class="card-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
+          <div>
+            <span class="card-title" style="font-size: 18px;">👩‍🏫 Мұғалім панелі — Сынып аналитикасы және Тексеру</span>
+            <p style="font-size: 13px; color: var(--slate-600); margin-top: 2px;">
+              Оқушылардың зертханалық жұмыстарын тексеріңіз, қате тұстарына түзету енгізіңіз және сыныптың меңгеру деңгейін талдаңыз.
+            </p>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button class="btn btn-orange" onclick="loadDemoClassData()">
+              📊 Сыныптың үлгі нәтижелерін жүктеу
+            </button>
+            <button class="btn btn-reset" onclick="switchView('student')">
+              Шығу (Оқушы режимі)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Жалпы тапсырғандар</div>
+          <div id="kpi-total" class="kpi-num">0</div>
+          <div class="kpi-sub">Барлық сыныптар бойынша</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Сыныптың орташа балы</div>
+          <div id="kpi-avg" class="kpi-num" style="color: var(--primary-light);">0%</div>
+          <div class="kpi-sub">Кесте + Тест + Қорытынды</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Толық меңгергендер (&ge;80%)</div>
+          <div id="kpi-mastery" class="kpi-num" style="color: var(--emerald);">0%</div>
+          <div id="kpi-mastery-sub" class="kpi-sub">0 оқушы жоғары деңгейде</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Тексеруді күтіп тұрғандар</div>
+          <div id="kpi-pending" class="kpi-num" style="color: var(--orange);">0</div>
+          <div class="kpi-sub">Мұғалім түзетуін қажет етеді</div>
+        </div>
+      </div>
+
+      <!-- Visual Analytics Charts -->
+      <div class="charts-grid">
+        <!-- Chart 1: Observation Table Accuracy -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <span class="card-title" style="font-size: 14px;">1. Бақылау кестесін толтыру дәлдігі</span>
+          </div>
+          <div id="chart-table-accuracy">
+            <p style="font-size: 12.5px; color: var(--slate-400);">Деректер жоқ...</p>
+          </div>
+        </div>
+
+        <!-- Chart 2: Quiz Questions Mastery -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <span class="card-title" style="font-size: 14px;">2. Тест сұрақтары бойынша меңгеру</span>
+          </div>
+          <div id="chart-quiz-accuracy">
+            <p style="font-size: 12.5px; color: var(--slate-400);">Деректер жоқ...</p>
+          </div>
+        </div>
+
+        <!-- Chart 3: Class Comprehension Distribution -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <span class="card-title" style="font-size: 14px;">3. Сыныптың жалпы түсіну деңгейі</span>
+          </div>
+          <div id="chart-level-dist">
+            <p style="font-size: 12.5px; color: var(--slate-400);">Деректер жоқ...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Submissions List -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Оқушылардың тапсырған жұмыстары</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <select id="filter-class" class="form-control" style="width: auto; padding: 6px 10px; font-size: 13px;" onchange="renderTeacherDashboard()">
+              <option value="ALL">Барлық сыныптар</option>
+              <option value="11 «А»">11 «А»</option>
+              <option value="11 «Ә»">11 «Ә»</option>
+              <option value="11 «Б»">11 «Б»</option>
+              <option value="11 «В»">11 «В»</option>
+            </select>
+            <select id="filter-status" class="form-control" style="width: auto; padding: 6px 10px; font-size: 13px;" onchange="renderTeacherDashboard()">
+              <option value="ALL">Барлық күйі</option>
+              <option value="pending">Тексерілмеген</option>
+              <option value="reviewed">Тексерілді / Түзетілді</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Оқушының аты-жөні</th>
+                <th>Сыныбы</th>
+                <th>Тәжірибе</th>
+                <th>Кесте (3/3)</th>
+                <th>Тест (4/4)</th>
+                <th>Жалпы балл</th>
+                <th>Күйі</th>
+                <th>Әрекет</th>
+              </tr>
+            </thead>
+            <tbody id="teacher-submissions-tbody">
+              <tr>
+                <td colspan="8" style="padding: 20px; color: var(--slate-600);">
+                  Әзірге тапсырылған жұмыстар жоқ. Жоғарыдағы <strong>«Сыныптың үлгі нәтижелерін жүктеу»</strong> батырмасын басып тестілеңіз.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: TEACHER LOGIN PIN                                            -->
+  <!-- ===================================================================== -->
+  <div id="modal-login" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 420px;">
+      <div class="card-header">
+        <span class="card-title">🔐 Мұғалім панеліне кіру</span>
+        <button class="btn btn-reset" onclick="closeModal('modal-login')">✕</button>
+      </div>
+      <p style="font-size: 13.5px; color: var(--slate-600); margin-bottom: 12px;">
+        Сынып статистикасын көру және оқушылардың жұмыстарын түзету үшін PIN-кодты енгізіңіз (әдепкі PIN: <strong>1234</strong>):
+      </p>
+      <div class="form-group" style="margin-bottom: 14px;">
+        <input type="password" id="teacher-pin-input" class="form-control" placeholder="PIN-код (1234)" maxlength="8">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="btn btn-primary" onclick="verifyTeacherPin()">Кіру</button>
+        <button class="btn btn-success" onclick="quickTeacherLogin()">⚡ 1 батырмамен кіру</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: TEACHER GRADING & CORRECTION WINDOW                          -->
+  <!-- ===================================================================== -->
+  <div id="modal-grade" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="card-header">
+        <div>
+          <span class="card-title" id="grade-modal-title">Оқушы жұмысын тексеру</span>
+          <div id="grade-modal-subtitle" style="font-size: 12.5px; color: var(--slate-600); margin-top: 2px;"></div>
+        </div>
+        <button class="btn btn-reset" onclick="closeModal('modal-grade')">✕ Жабу</button>
+      </div>
+
+      <div id="grade-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Хабарлама</div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION SCRIPT (FIREBASE FIRESTORE + LOCALSTORAGE FALLBACK)       -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Global storage state
+    window.appStore = {
+      db: null,
+      auth: null,
+      user: null,
+      appId: typeof __app_id !== 'undefined' ? __app_id : 'bio-lab2-enzymes',
+      useFirestore: false,
+      submissions: []
+    };
+
+    const LOCAL_STORAGE_KEY = 'bio_lab2_submissions_v1';
+
+    function loadLocalSubmissions() {
+      try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveLocalSubmissions(list) {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+      } catch (e) {
+        console.warn('Local storage write failed', e);
+      }
+    }
+
+    function updateSyncUI(isCloud) {
+      const dot = document.getElementById('sync-dot');
+      const txt = document.getElementById('sync-status-text');
+      const badge = document.getElementById('total-submissions-badge');
+      badge.textContent = window.appStore.submissions.length;
+
+      if (isCloud) {
+        dot.classList.remove('local');
+        txt.textContent = 'Деректер қоры: Бұлттық синхрондау қосулы (Нақты уақыт режимі)';
+      } else {
+        dot.classList.add('local');
+        txt.textContent = 'Деректер қоры: Жергілікті сақтау режимі (Оффлайн резерв)';
+      }
+    }
+
+    // Initialize Firebase if config is present, else use localStorage fallback
+    async function initStorage() {
+      window.appStore.submissions = loadLocalSubmissions();
+      updateSyncUI(false);
+
+      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        try {
+          const firebaseConfig = JSON.parse(__firebase_config);
+          const app = initializeApp(firebaseConfig);
+          const auth = getAuth(app);
+          const db = getFirestore(app);
+
+          window.appStore.auth = auth;
+          window.appStore.db = db;
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+
+          onAuthStateChanged(auth, (user) => {
+            if (!user) return;
+            window.appStore.user = user;
+            window.appStore.useFirestore = true;
+            updateSyncUI(true);
+
+            // Listen to public collection for class submissions
+            const colRef = collection(db, 'artifacts', window.appStore.appId, 'public', 'data', 'lab2_submissions');
+            onSnapshot(colRef, (snapshot) => {
+              const cloudList = [];
+              snapshot.forEach((docSnap) => {
+                cloudList.push({ id: docSnap.id, ...docSnap.data() });
+              });
+              // Sort newest first in JS memory
+              cloudList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+              window.appStore.submissions = cloudList;
+              saveLocalSubmissions(cloudList);
+              updateSyncUI(true);
+              if (typeof window.renderTeacherDashboard === 'function') {
+                window.renderTeacherDashboard();
+              }
+            }, (error) => {
+              console.warn('Firestore listener fallback to local:', error);
+              window.appStore.useFirestore = false;
+              updateSyncUI(false);
+            });
+          });
+        } catch (err) {
+          console.warn('Firebase init error, using local fallback:', err);
+          window.appStore.useFirestore = false;
+          updateSyncUI(false);
+        }
+      }
+    }
+
+    // Save or overwrite a submission
+    window.persistSubmission = async function(record) {
+      // Update local array first for immediate responsiveness
+      const idx = window.appStore.submissions.findIndex(s => s.id === record.id);
+      if (idx >= 0) {
+        window.appStore.submissions[idx] = record;
+      } else {
+        window.appStore.submissions.unshift(record);
+      }
+      saveLocalSubmissions(window.appStore.submissions);
+      updateSyncUI(window.appStore.useFirestore);
+
+      if (window.appStore.useFirestore && window.appStore.db && window.appStore.user) {
+        try {
+          const docRef = doc(window.appStore.db, 'artifacts', window.appStore.appId, 'public', 'data', 'lab2_submissions', record.id);
+          await setDoc(docRef, record);
+        } catch (e) {
+          console.error('Error writing to Firestore:', e);
+        }
+      }
+    };
+
+    // Update teacher grading/correction on an existing submission
+    window.persistTeacherReview = async function(subId, updates) {
+      const idx = window.appStore.submissions.findIndex(s => s.id === subId);
+      if (idx >= 0) {
+        window.appStore.submissions[idx] = { ...window.appStore.submissions[idx], ...updates };
+        saveLocalSubmissions(window.appStore.submissions);
+      }
+
+      if (window.appStore.useFirestore && window.appStore.db && window.appStore.user) {
+        try {
+          const docRef = doc(window.appStore.db, 'artifacts', window.appStore.appId, 'public', 'data', 'lab2_submissions', subId);
+          await updateDoc(docRef, updates);
+        } catch (e) {
+          console.error('Error updating review in Firestore:', e);
+        }
+      }
+    };
+
+    initStorage();
+  </script>
+
+  <!-- Main Interactive Lab & Teacher Dashboard Logic -->
+  <script>
+    // =========================================================================
+    // LAB STATE & CONSTANTS
+    // =========================================================================
+    const labState = {
+      waterAdded: false,
+      naclAdded: false,
+      cuso4Added: false,
+      amylaseAdded: false,
+      starchAdded: false,
+      incubated: false,
+      incubating: false,
+      iodineTested: { 1: false, 2: false, 3: false },
+      vols: { 1: 0, 2: 0, 3: 0 }
+    };
+
+    const TABLE_ANSWERS = {
+      row1: { time: 5, color: 'violet', label: 'Ашық күлгін / қызғылт-сары (жартылай ыдыраған)' },
+      row2: { time: 5, color: 'yellow', label: 'Сары / түссіз (крахмал толық ыдыраған)' },
+      row3: { time: 5, color: 'blue', label: 'Қою көк түс (крахмал ыдырамаған)' }
+    };
+
+    const QUIZ_DATA = [
+      {
+        id: 'q1',
+        q: '1. Сілекей амилазасының белсендіргіші ретінде қандай иондар әсер етеді?',
+        correct: 'b',
+        options: {
+          a: 'Cu²⁺ және Hg²⁺ иондары',
+          b: 'Cl⁻ (NaCl), Ca²⁺, Zn²⁺ иондары',
+          c: 'Тек дистилденген су молекулалары'
+        }
+      },
+      {
+        id: 'q2',
+        q: '2. №3 сынауыққа мыс сульфатын (CuSO₄) қосқанда йодпен неліктен қою көк түс пайда болды?',
+        correct: 'a',
+        options: {
+          a: 'Cu²⁺ иондары амилазаны ингибирлеп, крахмал ыдырамай қалды',
+          b: 'Крахмал толық глюкозаға дейін ыдырап кетті',
+          c: 'Йод ерітіндісі мыс сульфатымен әрекеттесіп көгерді'
+        }
+      },
+      {
+        id: 'q3',
+        q: '3. Амилаза ферменті крахмалдағы қандай байланыстарды үзіп, мальтоза түзеді?',
+        correct: 'c',
+        options: {
+          a: 'Пептидтік байланыстарды',
+          b: 'Фосфодиэфирлік байланыстарды',
+          c: 'α(1→4)-гликозидті байланыстарды'
+        }
+      },
+      {
+        id: 'q4',
+        q: '4. Қай сынауықта ферменттік реакция ең жоғары жылдамдықпен жүрді?',
+        correct: 'b',
+        options: {
+          a: '№1 сынауықта (дистилденген су)',
+          b: '№2 сынауықта (0,4 мл 1% NaCl қосылған)',
+          c: '№3 сынауықта (0,4 мл 1% CuSO₄ қосылған)'
+        }
+      }
+    ];
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('visible');
+      }, 3200);
+    }
+
+    // =========================================================================
+    // NAVIGATION & MODALS
+    // =========================================================================
+    function switchView(viewName) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(`view-${viewName}`).classList.add('active');
+      const theory = document.getElementById('theory-panel');
+
+      if (viewName === 'student') {
+        document.getElementById('nav-student').classList.add('active');
+        theory.style.display = 'block';
+      } else if (viewName === 'my-result') {
+        document.getElementById('nav-my-result').classList.add('active');
+        theory.style.display = 'none';
+        const currentName = document.getElementById('stu-name').value.trim();
+        if (currentName) {
+          document.getElementById('search-student-name').value = currentName;
+          lookupStudentResult();
+        }
+      } else if (viewName === 'teacher') {
+        document.getElementById('nav-teacher').classList.add('active');
+        theory.style.display = 'none';
+        renderTeacherDashboard();
+      }
+    }
+
+    function openTeacherLogin() {
+      document.getElementById('modal-login').classList.add('open');
+      document.getElementById('teacher-pin-input').value = '';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('open');
+    }
+
+    function verifyTeacherPin() {
+      const pin = document.getElementById('teacher-pin-input').value.trim();
+      if (pin === '1234') {
+        closeModal('modal-login');
+        switchView('teacher');
+        showToast('Мұғалім панеліне сәтті кірдіңіз!');
+      } else {
+        showToast('❌ Қате PIN-код! Әдепкі код: 1234');
+      }
+    }
+
+    function quickTeacherLogin() {
+      closeModal('modal-login');
+      switchView('teacher');
+      showToast('Мұғалім панеліне кірдіңіз!');
+    }
+
+    // =========================================================================
+    // VIRTUAL LAB SIMULATION STEPS
+    // =========================================================================
+    function updateExpProgress() {
+      let stepsDone = 0;
+      if (labState.waterAdded) stepsDone++;
+      if (labState.naclAdded) stepsDone++;
+      if (labState.cuso4Added) stepsDone++;
+      if (labState.amylaseAdded) stepsDone++;
+      if (labState.starchAdded) stepsDone++;
+      if (labState.incubated) stepsDone++;
+      if (labState.iodineTested[1]) stepsDone++;
+      if (labState.iodineTested[2]) stepsDone++;
+      if (labState.iodineTested[3]) stepsDone++;
+
+      const pct = Math.round((stepsDone / 9) * 100);
+      document.getElementById('exp-progress-label').textContent = `${pct}% орындалды`;
+      return pct;
+    }
+
+    function updateTubeLiquid(tubeNum, addVol, colorHex) {
+      labState.vols[tubeNum] = Number((labState.vols[tubeNum] + addVol).toFixed(1));
+      const totalVol = labState.vols[tubeNum];
+      const height = Math.round((totalVol / 3.5) * 165);
+      const yPos = 248 - height;
+
+      const rect = document.getElementById(`liq-main-${tubeNum}`);
+      rect.setAttribute('y', yPos);
+      rect.setAttribute('height', height);
+      if (colorHex) rect.setAttribute('fill', colorHex);
+
+      document.getElementById(`vol-main-${tubeNum}`).textContent = `${totalVol.toFixed(1)} мл`;
+
+      const drop = document.getElementById(`drop-main-${tubeNum}`);
+      if (colorHex) drop.setAttribute('fill', colorHex);
+      drop.classList.remove('dropping');
+      void drop.offsetWidth;
+      drop.classList.add('dropping');
+    }
+
+    function setStepState(stepNum, stateClass, badgeText) {
+      const box = document.getElementById(`step-${stepNum}`);
+      box.classList.remove('active', 'done');
+      if (stateClass) box.classList.add(stateClass);
+      document.getElementById(`badge-s${stepNum}`).textContent = badgeText;
+    }
+
+    function addWater() {
+      if (labState.waterAdded) return;
+      labState.waterAdded = true;
+      updateTubeLiquid(1, 2.0, '#bae6fd');
+      updateTubeLiquid(2, 1.6, '#bae6fd');
+      updateTubeLiquid(3, 1.6, '#bae6fd');
+
+      document.getElementById('btn-water').disabled = true;
+      document.getElementById('btn-nacl').disabled = false;
+      document.getElementById('bench-status').textContent = '1-кезең: №2 сынауыққа NaCl құйыңыз';
+      document.getElementById('live-explanation').innerHTML =
+        '<strong>1-қадам:</strong> №1 сынауыққа 2,0 мл, №2 және №3 сынауықтарға 1,6 мл дистилденген су құйылды.';
+      updateExpProgress();
+      showToast('Дистилденген су үш сынауыққа құйылды!');
+    }
+
+    function addNaCl() {
+      if (!labState.waterAdded || labState.naclAdded) return;
+      labState.naclAdded = true;
+      updateTubeLiquid(2, 0.4, '#bbf7d0');
+      document.getElementById('btn-nacl').disabled = true;
+      document.getElementById('btn-cuso4').disabled = false;
+      document.getElementById('bench-status').textContent = '1-кезең: №3 сынауыққа CuSO₄ құйыңыз';
+      document.getElementById('live-explanation').innerHTML =
+        '<strong>Белсендіргіш қосылды:</strong> №2 сынауыққа 0,4 мл 1% NaCl ерітіндісі құйылды.';
+      updateExpProgress();
+      showToast('№2 сынауыққа 1% NaCl қосылды!');
+    }
+
+    function addCuSO4() {
+      if (!labState.naclAdded || labState.cuso4Added) return;
+      labState.cuso4Added = true;
+      updateTubeLiquid(3, 0.4, '#60a5fa');
+      document.getElementById('btn-cuso4').disabled = true;
+
+      setStepState(1, 'done', 'Аяқталды ✓');
+      setStepState(2, 'active', 'Орындалуда');
+      document.getElementById('btn-amylase').disabled = false;
+      document.getElementById('bench-status').textContent = '2-кезең: Сілекей (амилаза) қосыңыз';
+      document.getElementById('live-explanation').innerHTML =
+        '<strong>Ингибитор қосылды:</strong> №3 сынауыққа 0,4 мл 1% CuSO<sub>4</sub> құйылды. Енді амилаза қосыңыз.';
+      updateExpProgress();
+      showToast('№3 сынауыққа 1% CuSO₄ қосылды!');
+    }
+
+    function addAmylase() {
+      if (!labState.cuso4Added || labState.amylaseAdded) return;
+      labState.amylaseAdded = true;
+      updateTubeLiquid(1, 0.5, '#fde68a');
+      updateTubeLiquid(2, 0.5, '#a7f3d0');
+      updateTubeLiquid(3, 0.5, '#93c5fd');
+
+      document.getElementById('btn-amylase').disabled = true;
+      document.getElementById('btn-starch').disabled = false;
+      document.getElementById('bench-status').textContent = '2-кезең: 1% Крахмал ерітіндісін қосыңыз';
+      document.getElementById('live-explanation').innerHTML =
+        '<strong>Фермент қосылды:</strong> Үш сынауыққа 0,5 мл сұйылтылған сілекей (амилаза) құйылды.';
+      updateExpProgress();
+      showToast('Барлық сынауыққа 0,5 мл амилаза қосылды!');
+    }
+
+    function addStarch() {
+      if (!labState.amylaseAdded || labState.starchAdded) return;
+      labState.starchAdded = true;
+      updateTubeLiquid(1, 1.0, '#f1f5f9');
+      updateTubeLiquid(2, 1.0, '#ecfdf5');
+      updateTubeLiquid(3, 1.0, '#dbeafe');
+
+      document.getElementById('btn-starch').disabled = true;
+      setStepState(2, 'done', 'Аяқталды ✓');
+      setStepState(3, 'active', 'Орындалуда');
+      document.getElementById('btn-timer').disabled = false;
+      document.getElementById('bench-status').textContent = '3-кезең: Таймерді қосыңыз (5 мин)';
+      document.getElementById('live-explanation').innerHTML =
+        '<strong>Субстрат қосылды:</strong> Жалпы көлем 3,5 мл. Енді 5 минуттық инкубация таймерін қосыңыз.';
+      updateExpProgress();
+      showToast('1% крахмал қосылды!');
+    }
+
+    let timerInterval = null;
+    function startIncubation() {
+      if (!labState.starchAdded || labState.incubating || labState.incubated) return;
+      labState.incubating = true;
+
+      document.getElementById('btn-timer').disabled = true;
+      document.getElementById('timer-status').textContent = 'Реакция жүруде...';
+      document.getElementById('bench-status').textContent = 'Инкубация жүруде (5 минут)...';
+
+      let simSeconds = 0;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        simSeconds += 6;
+        const mins = Math.floor(simSeconds / 60);
+        const secs = simSeconds % 60;
+        document.getElementById('timer-display').textContent =
+          `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        if (simSeconds >= 300) {
+          clearInterval(timerInterval);
+          labState.incubating = false;
+          labState.incubated = true;
+
+          document.getElementById('liq-main-2').setAttribute('fill', '#f0fdf4');
+          document.getElementById('liq-main-1').setAttribute('fill', '#f8fafc');
+          document.getElementById('liq-main-3').setAttribute('fill', '#bfdbfe');
+
+          document.getElementById('timer-status').textContent = '5 минут аяқталды ✓';
+          setStepState(3, 'done', 'Аяқталды ✓');
+          setStepState(4, 'active', 'Орындалуда');
+
+          document.getElementById('btn-iod-1').disabled = false;
+          document.getElementById('btn-iod-2').disabled = false;
+          document.getElementById('btn-iod-3').disabled = false;
+
+          const statusEl = document.getElementById('bench-status');
+          statusEl.textContent = '4-кезең: Йодпен түсті сынау жүргізіңіз';
+          statusEl.classList.add('ready');
+
+          document.getElementById('live-explanation').innerHTML =
+            '<strong>5 минут өтті!</strong> Енді әр сынауықтан 2–3 тамшы алып, йод ерітіндісі бар бақылау сынауықтарына тамызыңыз.';
+          updateExpProgress();
+          showToast('5 минуттық инкубация аяқталды!');
+        }
+      }, 100);
+    }
+
+    function testIodine(tubeNum) {
+      if (!labState.incubated || labState.iodineTested[tubeNum]) return;
+      labState.iodineTested[tubeNum] = true;
+      document.getElementById(`btn-iod-${tubeNum}`).disabled = true;
+
+      const drop = document.getElementById(`drop-iod-${tubeNum}`);
+      drop.classList.remove('dropping');
+      void drop.offsetWidth;
+      drop.classList.add('dropping');
+
+      const liq = document.getElementById(`liq-iod-${tubeNum}`);
+      const label = document.getElementById(`res-iod-${tubeNum}`);
+
+      setTimeout(() => {
+        if (tubeNum === 1) {
+          liq.setAttribute('fill', '#c084fc');
+          label.textContent = 'Ашық күлгін';
+          label.setAttribute('fill', '#7e22ce');
+          document.getElementById('live-explanation').innerHTML =
+            '<strong>№1 сынама (Дист. су):</strong> Ерітінді <em>ашық күлгін</em> түске боялды (крахмал жартылай ыдырады).';
+        } else if (tubeNum === 2) {
+          liq.setAttribute('fill', '#facc15');
+          label.textContent = 'Сары (өзгермеді)';
+          label.setAttribute('fill', '#15803d');
+          document.getElementById('live-explanation').innerHTML =
+            '<strong>№2 сынама (NaCl — белсендіргіш):</strong> Ерітінді <em>сары</em> (йодтың өз түсі) күйінде қалды — крахмал толық мальтозаға ыдырады!';
+        } else if (tubeNum === 3) {
+          liq.setAttribute('fill', '#1e3a8a');
+          label.textContent = 'Қою көк түс';
+          label.setAttribute('fill', '#be123c');
+          document.getElementById('live-explanation').innerHTML =
+            '<strong>№3 сынама (CuSO<sub>4</sub> — ингибитор):</strong> Ерітінді <em>қою көк түске</em> боялды — фермент тежеліп, крахмал ыдырамады.';
+        }
+
+        updateExpProgress();
+        if (labState.iodineTested[1] && labState.iodineTested[2] && labState.iodineTested[3]) {
+          setStepState(4, 'done', 'Барлығы тексерілді ✓');
+          document.getElementById('bench-status').textContent = 'Тәжірибе аяқталды! Кестені толтырыңыз';
+          showToast('Барлық 3 сынама тексерілді!');
+        }
+      }, 450);
+    }
+
+    function resetLab() {
+      clearInterval(timerInterval);
+      Object.assign(labState, {
+        waterAdded: false, naclAdded: false, cuso4Added: false,
+        amylaseAdded: false, starchAdded: false, incubated: false, incubating: false,
+        iodineTested: { 1: false, 2: false, 3: false },
+        vols: { 1: 0, 2: 0, 3: 0 }
+      });
+
+      [1, 2, 3].forEach(i => {
+        const liq = document.getElementById(`liq-main-${i}`);
+        liq.setAttribute('y', 248);
+        liq.setAttribute('height', 0);
+        document.getElementById(`vol-main-${i}`).textContent = '0.0 мл';
+
+        const iodLiq = document.getElementById(`liq-iod-${i}`);
+        iodLiq.setAttribute('fill', '#f59e0b');
+        const iodLbl = document.getElementById(`res-iod-${i}`);
+        iodLbl.textContent = 'Йод (1 мл)';
+        iodLbl.setAttribute('fill', '#475569');
+      });
+
+      document.getElementById('timer-display').textContent = '00:00';
+      document.getElementById('timer-status').textContent = 'Таймер өшірулі';
+
+      setStepState(1, 'active', 'Орындалуда');
+      setStepState(2, '', 'Күтуде');
+      setStepState(3, '', 'Күтуде');
+      setStepState(4, '', 'Күтуде');
+
+      document.getElementById('btn-water').disabled = false;
+      document.getElementById('btn-nacl').disabled = true;
+      document.getElementById('btn-cuso4').disabled = true;
+      document.getElementById('btn-amylase').disabled = true;
+      document.getElementById('btn-starch').disabled = true;
+      document.getElementById('btn-timer').disabled = true;
+      document.getElementById('btn-iod-1').disabled = true;
+      document.getElementById('btn-iod-2').disabled = true;
+      document.getElementById('btn-iod-3').disabled = true;
+
+      const statusEl = document.getElementById('bench-status');
+      statusEl.textContent = '1-кезең: Дистилденген су құйыңыз';
+      statusEl.classList.remove('ready');
+      updateExpProgress();
+      showToast('Зертхана бастапқы күйге қайтарылды.');
+    }
+
+    // =========================================================================
+    // CHECK TABLE & QUIZ
+    // =========================================================================
+    function evaluateTableData() {
+      const results = {};
+      let correctCount = 0;
+
+      [1, 2, 3].forEach(row => {
+        const timeVal = Number(document.getElementById(`time-row-${row}`).value);
+        const colorVal = document.getElementById(`sel-row-${row}`).value;
+        const expected = TABLE_ANSWERS[`row${row}`];
+
+        const timeOk = timeVal === expected.time;
+        const colorOk = colorVal === expected.color;
+        const rowOk = timeOk && colorOk;
+        if (rowOk) correctCount++;
+
+        results[`row${row}`] = {
+          time: timeVal || null,
+          color: colorVal || '',
+          timeOk,
+          colorOk,
+          isCorrect: rowOk
+        };
+      });
+
+      return { results, correctCount };
+    }
+
+    function checkTable() {
+      const { results, correctCount } = evaluateTableData();
+      let allFilled = true;
+
+      [1, 2, 3].forEach(row => {
+        const r = results[`row${row}`];
+        const tInp = document.getElementById(`time-row-${row}`);
+        const cSel = document.getElementById(`sel-row-${row}`);
+        tInp.classList.remove('correct', 'wrong');
+        cSel.classList.remove('correct', 'wrong');
+
+        if (!r.time || !r.color) {
+          allFilled = false;
+          return;
+        }
+        tInp.classList.add(r.timeOk ? 'correct' : 'wrong');
+        cSel.classList.add(r.colorOk ? 'correct' : 'wrong');
+      });
+
+      const fb = document.getElementById('table-feedback');
+      fb.classList.add('show');
+      fb.classList.remove('ok', 'err');
+
+      if (!allFilled) {
+        fb.classList.add('err');
+        fb.textContent = '⚠️ Барлық жолдағы уақытты (5 мин) және сұйықтық түсін толтырыңыз.';
+      } else if (correctCount === 3) {
+        fb.classList.add('ok');
+        fb.textContent = '✅ Керемет! Бақылау кестесі толық дұрыс толтырылды (3/3).';
+      } else {
+        fb.classList.add('err');
+        fb.textContent = `❌ ${correctCount}/3 жол дұрыс. Қызылмен белгіленген ұяшықтарды түзетіңіз.`;
+      }
+    }
+
+    function evaluateQuizData() {
+      const answers = {};
+      let score = 0;
+
+      QUIZ_DATA.forEach(item => {
+        const block = document.getElementById(`q-block-${item.id.replace('q', '')}`);
+        const selected = block.querySelector(`input[name="${item.id}"]:checked`);
+        const val = selected ? selected.value : '';
+        const isCorrect = val === item.correct;
+        if (isCorrect) score++;
+        answers[item.id] = { selected: val, isCorrect };
+      });
+
+      return { answers, score };
+    }
+
+    function checkQuiz() {
+      const { answers, score } = evaluateQuizData();
+      let answeredAll = true;
+
+      QUIZ_DATA.forEach((item, idx) => {
+        const block = document.getElementById(`q-block-${idx + 1}`);
+        block.querySelectorAll('.quiz-opt').forEach(opt => opt.classList.remove('correct-ans', 'wrong-ans'));
+
+        const ans = answers[item.id];
+        if (!ans.selected) {
+          answeredAll = false;
+          return;
+        }
+        const radio = block.querySelector(`input[value="${ans.selected}"]`);
+        if (radio) {
+          radio.closest('.quiz-opt').classList.add(ans.isCorrect ? 'correct-ans' : 'wrong-ans');
+        }
+      });
+
+      document.getElementById('quiz-score').textContent = `Ұпай: ${score} / 4`;
+
+      const fb = document.getElementById('quiz-feedback');
+      fb.classList.add('show');
+      fb.classList.remove('ok', 'err');
+
+      if (!answeredAll) {
+        fb.classList.add('err');
+        fb.textContent = '⚠️ Барлық 4 сұраққа жауап беріңіз.';
+      } else if (score === 4) {
+        fb.classList.add('ok');
+        fb.textContent = '🏆 Өте жақсы! Барлық сұрақтарға дұрыс жауап бердіңіз (4/4).';
+      } else {
+        fb.classList.add('err');
+        fb.textContent = `Нәтиже: ${score} / 4 ұпай. Қате жауаптарды қайта қарап шығыңыз.`;
+      }
+    }
+
+    // =========================================================================
+    // SUBMIT WORK TO TEACHER
+    // =========================================================================
+    async function submitStudentWork() {
+      const name = document.getElementById('stu-name').value.trim();
+      const className = document.getElementById('stu-class').value;
+      const conclusion = document.getElementById('conclusion-input').value.trim();
+
+      if (!name) {
+        showToast('⚠️ Алдымен оқушының аты-жөнін енгізіңіз!');
+        document.getElementById('stu-name').focus();
+        return;
+      }
+
+      const expPercent = updateExpProgress();
+      const { results: tableResults, correctCount: tableScore } = evaluateTableData();
+      const { answers: quizAnswers, score: quizScore } = evaluateQuizData();
+
+      // Calculate initial auto-score out of 100%
+      // Table: 45% (15% each), Quiz: 40% (10% each), Conclusion: 15%
+      const conclusionAutoPoints = conclusion.length >= 20 ? 15 : (conclusion.length > 0 ? 8 : 0);
+      const totalPercent = Math.min(100, (tableScore * 15) + (quizScore * 10) + conclusionAutoPoints);
+
+      const safeId = `${className}_${name}`.toLowerCase().replace(/[^a-zа-яәіңғүұқөһ0-9]+/gi, '_');
+
+      const submissionRecord = {
+        id: safeId,
+        studentName: name,
+        className: className,
+        timestamp: Date.now(),
+        expPercent: expPercent,
+        tableResults: tableResults,
+        tableScore: tableScore,
+        quizAnswers: quizAnswers,
+        quizScore: quizScore,
+        conclusion: conclusion,
+        autoPercent: totalPercent,
+        teacherBonus: 0,
+        finalPercent: totalPercent,
+        status: 'pending',
+        teacherFeedback: ''
+      };
+
+      const btn = document.getElementById('btn-submit-work');
+      btn.disabled = true;
+      btn.textContent = '⏳ Жіберілуде...';
+
+      await window.persistSubmission(submissionRecord);
+
+      btn.disabled = false;
+      btn.textContent = '🚀 Мұғалімге жіберу';
+      showToast('✅ Жұмысыңыз мұғалім панеліне сәтті жіберілді!');
+
+      // Automatically switch to "My Result" tab so student sees confirmation
+      document.getElementById('search-student-name').value = name;
+      switchView('my-result');
+    }
+
+    // =========================================================================
+    // STUDENT RESULT LOOKUP ("МЕНІҢ НӘТИЖЕМ")
+    // =========================================================================
+    function lookupStudentResult() {
+      const query = document.getElementById('search-student-name').value.trim().toLowerCase();
+      const container = document.getElementById('student-result-container');
+
+      if (!query) {
+        container.innerHTML = '<p style="color: var(--rose); font-weight: 700;">Аты-жөніңізді енгізіңіз.</p>';
+        return;
+      }
+
+      const found = window.appStore.submissions.find(s => s.studentName.toLowerCase().includes(query));
+      if (!found) {
+        container.innerHTML = `
+          <div class="feedback-msg show err">
+            «${query}» есімді оқушының жіберген жұмысы табылмады. Зертханалық жұмысты орындап, «Мұғалімге жіберу» батырмасын басыңыз.
+          </div>`;
+        return;
+      }
+
+      const isReviewed = found.status === 'reviewed';
+      const statusBadge = isReviewed
+        ? '<span class="status-pill ready">✅ Тексерілді / Түзетілді</span>'
+        : '<span class="status-pill">⏳ Мұғалімнің тексеруінде</span>';
+
+      const colorMap = {
+        yellow: 'Сары / түссіз',
+        violet: 'Ашық күлгін',
+        blue: 'Қою көк түс',
+        '': 'Таңдалмаған'
+      };
+
+      container.innerHTML = `
+        <div style="border: 1.5px solid var(--slate-200); border-radius: var(--radius-md); padding: 16px; background: #f8fafc;">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid var(--slate-200); padding-bottom: 12px; margin-bottom: 14px;">
+            <div>
+              <h3 style="font-size: 17px; font-weight: 800; color: var(--slate-900);">${found.studentName} (${found.className})</h3>
+              <span style="font-size: 12px; color: var(--slate-600);">Тәжірибе орындалуы: ${found.expPercent}% • Жалпы нәтиже: <strong>${found.finalPercent}%</strong></span>
+            </div>
+            ${statusBadge}
+          </div>
+
+          <!-- Teacher Feedback Box -->
+          <div style="background: ${isReviewed ? 'var(--emerald-bg)' : 'var(--amber-bg)'}; border: 1.5px solid ${isReviewed ? '#86efac' : '#fde68a'}; border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+            <strong style="font-size: 13.5px; color: ${isReviewed ? '#14532d' : '#92400e'}; display: block; margin-bottom: 4px;">
+              👩‍🏫 Мұғалімнің пікірі мен түзетуі:
+            </strong>
+            <p style="font-size: 13.5px; color: var(--slate-800);">
+              ${found.teacherFeedback ? found.teacherFeedback : 'Мұғалім әлі пікір қалдырған жоқ. Тексерілгеннен кейін түзетулер осында көрінеді.'}
+            </p>
+            ${found.teacherBonus !== 0 ? `<div style="margin-top: 6px; font-size: 12px; font-weight: 700; color: var(--primary);">Мұғалім түзету балы: ${found.teacherBonus > 0 ? '+' : ''}${found.teacherBonus}%</div>` : ''}
+          </div>
+
+          <!-- Detailed Breakdown -->
+          <div class="review-grid">
+            <div class="review-item ${found.tableResults.row1.isCorrect ? 'ok' : 'bad'}">
+              <strong>№1 Сынауық (Дист. су):</strong><br>
+              Сіздің жауабыңыз: ${found.tableResults.row1.time || '—'} мин, ${colorMap[found.tableResults.row1.color]}<br>
+              ${!found.tableResults.row1.isCorrect ? `<span style="color: var(--emerald); font-weight: 700;">Дұрысы: 5 мин, ${TABLE_ANSWERS.row1.label}</span>` : '✓ Дұрыс'}
+            </div>
+            <div class="review-item ${found.tableResults.row2.isCorrect ? 'ok' : 'bad'}">
+              <strong>№2 Сынауық (NaCl — белсендіргіш):</strong><br>
+              Сіздің жауабыңыз: ${found.tableResults.row2.time || '—'} мин, ${colorMap[found.tableResults.row2.color]}<br>
+              ${!found.tableResults.row2.isCorrect ? `<span style="color: var(--emerald); font-weight: 700;">Дұрысы: 5 мин, ${TABLE_ANSWERS.row2.label}</span>` : '✓ Дұрыс'}
+            </div>
+            <div class="review-item ${found.tableResults.row3.isCorrect ? 'ok' : 'bad'}">
+              <strong>№3 Сынауық (CuSO₄ — ингибитор):</strong><br>
+              Сіздің жауабыңыз: ${found.tableResults.row3.time || '—'} мин, ${colorMap[found.tableResults.row3.color]}<br>
+              ${!found.tableResults.row3.isCorrect ? `<span style="color: var(--emerald); font-weight: 700;">Дұрысы: 5 мин, ${TABLE_ANSWERS.row3.label}</span>` : '✓ Дұрыс'}
+            </div>
+            <div class="review-item">
+              <strong>Тест нәтижесі:</strong> ${found.quizScore} / 4 ұпай<br>
+              <strong>Жазған қорытындыңыз:</strong> <em>«${found.conclusion || 'Жазылмаған'}»</em>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // TEACHER PANEL: ANALYTICS & GRADING
+    // =========================================================================
+    function renderBarRow(label, percent, colorHex) {
+      return `
+        <div class="bar-row">
+          <div class="bar-meta">
+            <span>${label}</span>
+            <span>${percent}%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${percent}%; background: ${colorHex};"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    window.renderTeacherDashboard = function() {
+      const allSubs = window.appStore.submissions || [];
+      const classFilter = document.getElementById('filter-class').value;
+      const statusFilter = document.getElementById('filter-status').value;
+
+      const filtered = allSubs.filter(s => {
+        const classMatch = classFilter === 'ALL' || s.className === classFilter;
+        const statusMatch = statusFilter === 'ALL' || s.status === statusFilter;
+        return classMatch && statusMatch;
+      });
+
+      // KPIs (calculated on class-filtered list)
+      const classSubs = allSubs.filter(s => classFilter === 'ALL' || s.className === classFilter);
+      const total = classSubs.length;
+      const avgScore = total ? Math.round(classSubs.reduce((acc, s) => acc + (s.finalPercent || 0), 0) / total) : 0;
+      const highMasteryCount = classSubs.filter(s => (s.finalPercent || 0) >= 80).length;
+      const masteryPct = total ? Math.round((highMasteryCount / total) * 100) : 0;
+      const pendingCount = classSubs.filter(s => s.status !== 'reviewed').length;
+
+      document.getElementById('kpi-total').textContent = total;
+      document.getElementById('kpi-avg').textContent = `${avgScore}%`;
+      document.getElementById('kpi-mastery').textContent = `${masteryPct}%`;
+      document.getElementById('kpi-mastery-sub').textContent = `${highMasteryCount} оқушы ≥80% жинады`;
+      document.getElementById('kpi-pending').textContent = pendingCount;
+
+      // Charts
+      const chartTable = document.getElementById('chart-table-accuracy');
+      const chartQuiz = document.getElementById('chart-quiz-accuracy');
+      const chartLevel = document.getElementById('chart-level-dist');
+
+      if (total === 0) {
+        chartTable.innerHTML = '<p style="font-size: 12.5px; color: var(--slate-400);">Талдау үшін деректер жоқ.</p>';
+        chartQuiz.innerHTML = '<p style="font-size: 12.5px; color: var(--slate-400);">Талдау үшін деректер жоқ.</p>';
+        chartLevel.innerHTML = '<p style="font-size: 12.5px; color: var(--slate-400);">Талдау үшін деректер жоқ.</p>';
+      } else {
+        // 1. Table accuracy per row
+        const r1Pct = Math.round((classSubs.filter(s => s.tableResults?.row1?.isCorrect).length / total) * 100);
+        const r2Pct = Math.round((classSubs.filter(s => s.tableResults?.row2?.isCorrect).length / total) * 100);
+        const r3Pct = Math.round((classSubs.filter(s => s.tableResults?.row3?.isCorrect).length / total) * 100);
+
+        chartTable.innerHTML =
+          renderBarRow('№1 Дист. су (бақылау)', r1Pct, '#0284c7') +
+          renderBarRow('№2 NaCl (белсендіргіш)', r2Pct, '#16a34a') +
+          renderBarRow('№3 CuSO₄ (ингибитор)', r3Pct, '#2563eb');
+
+        // 2. Quiz accuracy per question
+        const q1Pct = Math.round((classSubs.filter(s => s.quizAnswers?.q1?.isCorrect).length / total) * 100);
+        const q2Pct = Math.round((classSubs.filter(s => s.quizAnswers?.q2?.isCorrect).length / total) * 100);
+        const q3Pct = Math.round((classSubs.filter(s => s.quizAnswers?.q3?.isCorrect).length / total) * 100);
+        const q4Pct = Math.round((classSubs.filter(s => s.quizAnswers?.q4?.isCorrect).length / total) * 100);
+
+        chartQuiz.innerHTML =
+          renderBarRow('1-сұрақ (Белсендіргіш иондар)', q1Pct, '#16a34a') +
+          renderBarRow('2-сұрақ (CuSO₄ ингибирлеуі)', q2Pct, '#2563eb') +
+          renderBarRow('3-сұрақ (α(1→4) байланыс)', q3Pct, '#7c3aed') +
+          renderBarRow('4-сұрақ (Реакция жылдамдығы)', q4Pct, '#ea580c');
+
+        // 3. Comprehension distribution
+        const highCnt = classSubs.filter(s => s.finalPercent >= 80).length;
+        const midCnt = classSubs.filter(s => s.finalPercent >= 50 && s.finalPercent < 80).length;
+        const lowCnt = classSubs.filter(s => s.finalPercent < 50).length;
+
+        chartLevel.innerHTML =
+          renderBarRow(`Жоғары деңгей (80–100%) — ${highCnt} оқушы`, Math.round((highCnt / total) * 100), '#16a34a') +
+          renderBarRow(`Орташа деңгей (50–79%) — ${midCnt} оқушы`, Math.round((midCnt / total) * 100), '#f59e0b') +
+          renderBarRow(`Төмен деңгей (<50%) — ${lowCnt} оқушы`, Math.round((lowCnt / total) * 100), '#e11d48');
+      }
+
+      // Render Student Table
+      const tbody = document.getElementById('teacher-submissions-tbody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="padding: 20px; color: var(--slate-600);">
+              Сүзгі бойынша жұмыстар табылмады.
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(sub => {
+        const isRev = sub.status === 'reviewed';
+        return `
+          <tr>
+            <td class="left-align"><strong>${sub.studentName}</strong></td>
+            <td>${sub.className}</td>
+            <td>${sub.expPercent}%</td>
+            <td><strong>${sub.tableScore} / 3</strong></td>
+            <td><strong>${sub.quizScore} / 4</strong></td>
+            <td>
+              <span style="font-weight: 800; color: ${sub.finalPercent >= 80 ? 'var(--emerald)' : (sub.finalPercent >= 50 ? 'var(--amber)' : 'var(--rose)')};">
+                ${sub.finalPercent}%
+              </span>
+            </td>
+            <td>
+              ${isRev
+                ? '<span class="status-pill ready">Тексерілді ✓</span>'
+                : '<span class="status-pill">Тексерілмеген</span>'}
+            </td>
+            <td>
+              <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="openGradingModal('${sub.id}')">
+                ✏️ Тексеру / Түзету
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    // Open individual grading and correction modal
+    function openGradingModal(subId) {
+      const sub = window.appStore.submissions.find(s => s.id === subId);
+      if (!sub) return;
+
+      document.getElementById('grade-modal-title').textContent = `Оқушы: ${sub.studentName} (${sub.className})`;
+      document.getElementById('grade-modal-subtitle').textContent =
+        `Тәжірибе орындалуы: ${sub.expPercent}% • Автоматты баға: ${sub.autoPercent}% • Соңғы баға: ${sub.finalPercent}%`;
+
+      const colorNames = {
+        yellow: 'Сары / түссіз',
+        violet: 'Ашық күлгін',
+        blue: 'Қою көк түс',
+        '': 'Таңдалмаған'
+      };
+
+      const renderRowReview = (rowKey, title, expectedObj) => {
+        const r = sub.tableResults[rowKey] || { time: null, color: '', isCorrect: false };
+        return `
+          <div class="review-item ${r.isCorrect ? 'ok' : 'bad'}">
+            <div style="display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 4px;">
+              <span>${title}</span>
+              <span>${r.isCorrect ? '✅ Дұрыс' : '❌ Қате'}</span>
+            </div>
+            <div>Оқушы жауабы: <strong>${r.time || '—'} мин</strong>, <strong>${colorNames[r.color]}</strong></div>
+            ${!r.isCorrect ? `<div style="color: var(--emerald); font-weight: 700; margin-top: 3px;">Дұрыс жауабы: ${expectedObj.time} мин, ${expectedObj.label}</div>` : ''}
+          </div>
+        `;
+      };
+
+      const quizReviewHtml = QUIZ_DATA.map(item => {
+        const ans = sub.quizAnswers[item.id] || { selected: '', isCorrect: false };
+        const chosenText = ans.selected ? item.options[ans.selected] : 'Жауап берілмеген';
+        const correctText = item.options[item.correct];
+        return `
+          <div class="review-item ${ans.isCorrect ? 'ok' : 'bad'}" style="margin-bottom: 8px;">
+            <div style="font-weight: 700;">${item.q}</div>
+            <div style="margin-top: 3px;">Оқушы белгіледі: <strong>${chosenText}</strong> ${ans.isCorrect ? '✅' : '❌'}</div>
+            ${!ans.isCorrect ? `<div style="color: var(--emerald); font-weight: 700;">Дұрыс нұсқа: ${correctText}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('grade-modal-body').innerHTML = `
+        <h4 style="font-size: 14px; font-weight: 800; color: var(--primary); margin-top: 8px;">1. Бақылау кестесін тексеру:</h4>
+        <div class="review-grid">
+          ${renderRowReview('row1', '№1 Дистилденген су (бақылау)', TABLE_ANSWERS.row1)}
+          ${renderRowReview('row2', '№2 Натрий хлориді (NaCl)', TABLE_ANSWERS.row2)}
+          ${renderRowReview('row3', '№3 Мыс сульфаты (CuSO₄)', TABLE_ANSWERS.row3)}
+          <div class="review-item" style="background: #f8fafc;">
+            <strong>Оқушының жазған қорытындысы:</strong>
+            <p style="margin-top: 5px; font-style: italic; color: var(--slate-800);">
+              «${sub.conclusion || 'Оқушы қорытынды жазбаған.'}»
+            </p>
+          </div>
+        </div>
+
+        <h4 style="font-size: 14px; font-weight: 800; color: var(--primary); margin: 12px 0 8px 0;">2. Тест жауаптары (${sub.quizScore}/4):</h4>
+        ${quizReviewHtml}
+
+        <div style="background: var(--primary-bg); border: 1.5px solid #93c5fd; border-radius: var(--radius-md); padding: 14px; margin-top: 14px;">
+          <h4 style="font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 8px;">
+            ✍️ Мұғалімнің түзетуі және кері байланысы
+          </h4>
+          <div style="display: grid; grid-template-columns: 180px 1fr; gap: 12px; align-items: start;">
+            <div class="form-group">
+              <label for="teacher-bonus-input">Ұпайды түзету (%):</label>
+              <input type="number" id="teacher-bonus-input" class="form-control" value="${sub.teacherBonus || 0}" min="-30" max="30" step="5">
+              <small style="font-size: 11px; color: var(--slate-600);">Қорытынды сапасы үшін + немесе − %</small>
+            </div>
+            <div class="form-group">
+              <label for="teacher-feedback-input">Қателерді түзету және ұсыныс:</label>
+              <textarea id="teacher-feedback-input" class="form-control" rows="3" placeholder="Мысалы: №3 сынауықта CuSO4 ингибитор екенін ескеріп, қою көк түс болатынын қайта қараңыз...">${sub.teacherFeedback || ''}</textarea>
+            </div>
+          </div>
+          <div style="margin-top: 12px; text-align: right;">
+            <button class="btn btn-success" style="padding: 10px 20px;" onclick="saveTeacherCorrection('${sub.id}')">
+              💾 Түзетуді сақтау және оқушыға жіберу
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-grade').classList.add('open');
+    }
+
+    async function saveTeacherCorrection(subId) {
+      const sub = window.appStore.submissions.find(s => s.id === subId);
+      if (!sub) return;
+
+      const bonus = Number(document.getElementById('teacher-bonus-input').value) || 0;
+      const feedback = document.getElementById('teacher-feedback-input').value.trim();
+      const updatedFinal = Math.max(0, Math.min(100, (sub.autoPercent || 0) + bonus));
+
+      await window.persistTeacherReview(subId, {
+        teacherBonus: bonus,
+        finalPercent: updatedFinal,
+        teacherFeedback: feedback,
+        status: 'reviewed'
+      });
+
+      closeModal('modal-grade');
+      renderTeacherDashboard();
+      showToast(`✅ ${sub.studentName} жұмысына түзету сақталды!`);
+    }
+
+    // =========================================================================
+    // DEMO CLASS DATA LOADER
+    // =========================================================================
+    async function loadDemoClassData() {
+      const demoStudents = [
+        {
+          id: '11_a_alihan_nurlanuly',
+          studentName: 'Нұрланұлы Әлихан',
+          className: '11 «А»',
+          timestamp: Date.now() - 3600000,
+          expPercent: 100,
+          tableResults: {
+            row1: { time: 5, color: 'violet', isCorrect: true },
+            row2: { time: 5, color: 'yellow', isCorrect: true },
+            row3: { time: 5, color: 'blue', isCorrect: true }
+          },
+          tableScore: 3,
+          quizAnswers: {
+            q1: { selected: 'b', isCorrect: true },
+            q2: { selected: 'a', isCorrect: true },
+            q3: { selected: 'c', isCorrect: true },
+            q4: { selected: 'b', isCorrect: true }
+          },
+          quizScore: 4,
+          conclusion: 'Жұмыс мақсаты орындалды. NaCl амилазаны белсендіріп крахмалды толық ыдыратты (сары түс), ал CuSO4 ферментті тежеді (қою көк түс).',
+          autoPercent: 100,
+          teacherBonus: 0,
+          finalPercent: 100,
+          status: 'reviewed',
+          teacherFeedback: 'Өте жақсы! Барлық тәжірибе кезеңдері мен қорытынды дәл жазылған.'
+        },
+        {
+          id: '11_a_aru_serikkyzy',
+          studentName: 'Серікқызы Аружан',
+          className: '11 «А»',
+          timestamp: Date.now() - 2800000,
+          expPercent: 100,
+          tableResults: {
+            row1: { time: 5, color: 'violet', isCorrect: true },
+            row2: { time: 5, color: 'yellow', isCorrect: true },
+            row3: { time: 5, color: 'violet', isCorrect: false }
+          },
+          tableScore: 2,
+          quizAnswers: {
+            q1: { selected: 'b', isCorrect: true },
+            q2: { selected: 'a', isCorrect: true },
+            q3: { selected: 'a', isCorrect: false },
+            q4: { selected: 'b', isCorrect: true }
+          },
+          quizScore: 3,
+          conclusion: 'Амилаза крахмалды ыдыратады, натрий хлориді реакцияны жылдамдатты.',
+          autoPercent: 75,
+          teacherBonus: 0,
+          finalPercent: 75,
+          status: 'pending',
+          teacherFeedback: ''
+        },
+        {
+          id: '11_a_dias_kairatov',
+          studentName: 'Қайратов Диас',
+          className: '11 «А»',
+          timestamp: Date.now() - 1900000,
+          expPercent: 89,
+          tableResults: {
+            row1: { time: 5, color: 'blue', isCorrect: false },
+            row2: { time: 5, color: 'yellow', isCorrect: true },
+            row3: { time: 5, color: 'blue', isCorrect: true }
+          },
+          tableScore: 2,
+          quizAnswers: {
+            q1: { selected: 'b', isCorrect: true },
+            q2: { selected: 'c', isCorrect: false },
+            q3: { selected: 'c', isCorrect: true },
+            q4: { selected: 'b', isCorrect: true }
+          },
+          quizScore: 3,
+          conclusion: 'Белсендіргіштер реакцияны тездетеді, ингибиторлар баяулатады.',
+          autoPercent: 75,
+          teacherBonus: 0,
+          finalPercent: 75,
+          status: 'pending',
+          teacherFeedback: ''
+        },
+        {
+          id: '11_ae_madina_talgatkyzy',
+          studentName: 'Талғатқызы Мәдина',
+          className: '11 «Ә»',
+          timestamp: Date.now() - 900000,
+          expPercent: 67,
+          tableResults: {
+            row1: { time: 5, color: 'yellow', isCorrect: false },
+            row2: { time: 5, color: 'blue', isCorrect: false },
+            row3: { time: 5, color: 'blue', isCorrect: true }
+          },
+          tableScore: 1,
+          quizAnswers: {
+            q1: { selected: 'a', isCorrect: false },
+            q2: { selected: 'a', isCorrect: true },
+            q3: { selected: 'b', isCorrect: false },
+            q4: { selected: 'a', isCorrect: false }
+          },
+          quizScore: 1,
+          conclusion: 'Крахмал йодпен көк түс береді.',
+          autoPercent: 33,
+          teacherBonus: 0,
+          finalPercent: 33,
+          status: 'pending',
+          teacherFeedback: ''
+        }
+      ];
+
+      for (const student of demoStudents) {
+        await window.persistSubmission(student);
+      }
+
+      renderTeacherDashboard();
+      showToast('📊 4 оқушының үлгі нәтижелері жүктелді!');
+    }
+  </script>
+</body>
+</html>
